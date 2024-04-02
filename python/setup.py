@@ -208,6 +208,7 @@ def get_thirdparty_packages():
 def download_and_copy(src_path, variable, version, url_func):
     triton_cache_path = get_triton_cache_path()
     if variable in os.environ:
+        print(f'{variable} is already set. Skipping download and copy.')
         return
     base_dir = os.path.dirname(__file__)
     system = platform.system()
@@ -216,7 +217,7 @@ def download_and_copy(src_path, variable, version, url_func):
     tmp_path = os.path.join(triton_cache_path, "nvidia")  # path to cache the download
     dst_path = os.path.join(base_dir, os.pardir, "third_party", "nvidia", "backend", src_path)  # final binary path
     src_path = os.path.join(tmp_path, src_path)
-    download = not os.path.exists(src_path)
+    download = not os.path.exists(src_path)  # source path is the cache path (~/.triton/nvidia/backend/bin/xxx) 
     if os.path.exists(dst_path) and system == "Linux":
         curr_version = subprocess.check_output([dst_path, "--version"]).decode("utf-8").strip()
         curr_version = re.search(r"V([.|\d]+)", curr_version).group(1)
@@ -369,7 +370,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(["cmake", "--build", "."] + build_args, cwd=cmake_dir)
         subprocess.check_call(["cmake", "--build", ".", "--target", "mlir-doc"], cwd=cmake_dir)
 
-
+# use CUDA 12.4 toolkit by default, maybe incompatible with the CUDA toolkit in this environment
 download_and_copy(
     src_path="bin/ptxas",
     variable="TRITON_PTXAS_PATH",
